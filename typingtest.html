@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เกมฝึกพิมพ์ 5 ด่าน + เสียง</title>
+<style>
+body { font-family: "TH Sarabun New", sans-serif; text-align:center; padding:40px; background-color:#f9f9f9; }
+h1 { color:#2c3e50; }
+#targetText { font-size:28px; font-weight:bold; margin:20px; color:#d35400; }
+#typingInput { font-size:24px; padding:10px; width:300px; text-align:center; }
+#result { font-size:22px; margin-top:15px; color:green; }
+button { font-size:18px; padding:10px 20px; margin:10px; border-radius:8px; border:none; background-color:#3498db; color:white; cursor:pointer; }
+button:hover { background-color:#2980b9; }
+</style>
+</head>
+<body>
+<h1>🎮 เกมฝึกพิมพ์ 5 ด่าน + เสียง</h1>
+<p id="instruction">กดปุ่ม "เริ่มเกม" เพื่อเริ่ม</p>
+<button id="startBtn">เริ่มเกม</button>
+
+<h2 id="levelTitle"></h2>
+<p id="targetText"></p>
+<input type="text" id="typingInput" placeholder="พิมพ์ตรงนี้..." disabled>
+<p id="result"></p>
+<h3>⏱ เวลา: <span id="time">0</span> วินาที</h3>
+<h3>⭐ คะแนน: <span id="score">0</span></h3>
+
+<!-- เสียง -->
+<audio id="correctSound" src="https://www.soundjay.com/button/sounds/button-3.mp3"></audio>
+<audio id="startSound" src="https://www.soundjay.com/button/sounds/button-16.mp3"></audio>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+const levels = [
+  { title:"ด่าน 1: แถวกลาง", words:["ฟ","ห","ก","ด","่","า","ส","ว"] },
+  { title:"ด่าน 2: แถวบน", words:["ๆ","ไ","ำ","พ","ะ","ฐ","ั","ุ"] },
+  { title:"ด่าน 3: แถวล่าง", words:["ล","ฃ","ฅ","ึ","ื","ท","น","ม"] },
+  { title:"ด่าน 4: คำง่าย ๆ", words:["มา","ไป","รถ","แมว","ปลา","โต๊ะ"] },
+  { title:"ด่าน 5: ประโยคสั้น ๆ", words:["แม่มา","พ่อไป","กินข้าว","ไปโรงเรียน","ฉันรักแม่"] }
+];
+
+let currentLevel=0, currentWordIndex=0, score=0, totalWords=0, startTime, timerInterval;
+const startBtn=document.getElementById("startBtn");
+const typingInput=document.getElementById("typingInput");
+const targetText=document.getElementById("targetText");
+const levelTitle=document.getElementById("levelTitle");
+const result=document.getElementById("result");
+const timeDisplay=document.getElementById("time");
+const scoreDisplay=document.getElementById("score");
+const instruction=document.getElementById("instruction");
+
+const correctSound = document.getElementById("correctSound");
+const startSound = document.getElementById("startSound");
+
+function startGame(){
+  startSound.play();
+  currentLevel=0; currentWordIndex=0; score=0;
+  totalWords=levels.reduce((sum,lvl)=>sum+lvl.words.length,0);
+  scoreDisplay.textContent=score;
+  timeDisplay.textContent=0;
+  typingInput.disabled=false;
+  typingInput.value="";
+  typingInput.focus();
+  instruction.textContent="เริ่มพิมพ์เลย!";
+  startTime=Date.now();
+  timerInterval=setInterval(()=>{timeDisplay.textContent=Math.floor((Date.now()-startTime)/1000)},1000);
+  loadWord();
+}
+
+function loadWord(){
+  if(currentLevel>=levels.length){ endGame(); return; }
+  const level=levels[currentLevel];
+  levelTitle.textContent=level.title;
+  targetText.textContent=level.words[currentWordIndex];
+  typingInput.value="";
+  result.textContent="";
+  typingInput.focus();
+}
+
+function endGame(){
+  clearInterval(timerInterval);
+  instruction.textContent=`🎉 จบเกมแล้ว! คุณได้ ${score}/${totalWords} คะแนน ในเวลา ${timeDisplay.textContent} วินาที`;
+  targetText.textContent=""; levelTitle.textContent=""; typingInput.disabled=true;
+}
+
+typingInput.addEventListener("input", function(){
+  if(this.value===targetText.textContent){
+    score++; scoreDisplay.textContent=score;
+    result.textContent="✅ ถูกต้อง!";
+    correctSound.play(); // เล่นเสียงพิมพ์ถูกต้อง
+    setTimeout(()=>{
+      currentWordIndex++;
+      if(currentWordIndex>=levels[currentLevel].words.length){
+        currentLevel++; currentWordIndex=0;
+      }
+      loadWord();
+    },500);
+  }
+});
+
+startBtn.addEventListener("click", startGame);
+
+});
+</script>
+</body>
+</html>
